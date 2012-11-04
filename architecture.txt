@@ -1,0 +1,35 @@
+Notes:
+
+Emphasis on playability - don't bother showing if it can't be played
+
+Structure:
+
+Pages
+
+Account
+	User
+
+Board class, overlord, handles logic for the board
+	Source class
+		Informational
+			iTunes (read only)
+			Last.fm
+			Spotify
+			Zune
+			
+		Streaming
+			Rdio (priority)
+			Grooveshark (2nd)
+			Gmusics (python)
+			Local	
+	
+Frontend
+	Playlist class
+	Icon class
+		Album art
+		Social
+		Modifiers
+			Song chance
+			Repeat
+			Link to other songs
+	
