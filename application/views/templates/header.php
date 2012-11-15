@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title><?php echo $title ?> - CodeIgniter 2 Tutorial</title>
+    <title><?php echo $title ?></title>
 </head>
 <body>
-<h1>CodeIgniter 2 Tutorial</h1>
+<h2>LET'S ALL GET DRUNK</h2>
