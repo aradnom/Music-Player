@@ -1,7 +1,7 @@
 <?php
 // Handles OAuth authentication for an API using the standard PHP OAuth library -
 // assumes OAuth 1.0
-// Takes an API Key/Secret and will return an access token as a $_SESSION var
+// Takes an API Key/Secret and will return an access token in the user's db entry
 
 class API_OAuth {
 	private $oauth = null;
@@ -21,10 +21,20 @@ class API_OAuth {
 	private $access_token = null;
 	private $access_secret = null;
 
-	public function __construct () {
+	// Other vars
+	private $api_name = null;
+	private $response = null;
+	private $user = null;
+
+	public function __construct ( $args ) {
 
 		if ( function_exists('get_instance') )
 			$this->ci = get_instance();
+
+		if ( ! $args )
+			die( 'User info must be set before using.' );
+
+		$this->user = $args['user'];
 
 	}	
 
@@ -66,20 +76,25 @@ class API_OAuth {
             	$access = $oauth->getAccessToken( $this->access_url, null, $this->verifier );
             } catch ( OAuthException $e ) {
             	if ( stristr( $e->debugInfo['headers_recv'], '401') ) // Token is expired, start over
-            		$this->ci->session->unset_userdata( array( 'api' => array( 'rdio' => '' ) ) );
-            		//print_r( $e->debugInfo['headers_recv'] );
+            		$this->ci->mongo_db->where( array( 'username' => $this->user['username'] ) )->
+						unset_field( 'api.' . $this->api_name )->
+						update( 'users' );
             }
             
-            //print_r( $access );
-            
             if ( isset( $access['error'] ) ) {
-                $this->ci->session->unset_userdata( array( 'api' => array( 'rdio' => '' ) ) );
+            	$this->ci->mongo_db->where( array( 'username' => $this->user['username'] ) )->
+            		unset_field( 'api.' . $this->api_name )->
+            		update( 'users' );
             } else {
-                // Set the access session variables and away we go
-                $this->ci->session->set_userdata( array( 'api' => array( 'rdio' => array(
-                	'access_token' => $access['oauth_token'],
-                	'access_secret' => $access['oauth_token_secret']
-                ))));
+                // Set the access variables in the db and away we go
+                $this->ci->mongo_db->where( array( 'username' => $this->user['username'] ) )->
+					set( 'api', array( $this->api_name => array( 
+						'oauth_token' => $this->user['api']['rdio']['oauth_token'],
+						'oauth_token_secret' => $this->user['api']['rdio']['oauth_token_secret'],
+						'access_token' => $access['oauth_token'],
+						'access_secret' => $access['oauth_token_secret']
+					) ) )->
+					update( 'users' );
             }            
         }
 	}
@@ -90,22 +105,19 @@ class API_OAuth {
 			$this->oauth->enableDebug();
 
 			$this->oauth->setToken( $this->access_token, $this->access_secret );
-			//echo $this->api_key . ' ' . $this->shared_secret . ' ' . $this->access_token . ' ' . $this->access_secret;
 		}		
 	}
 
-	public function fetch ( $url ) {
+	public function fetch ( $url, $args, $method = OAUTH_HTTP_METHOD_POST ) {
 		if ( $this->oauth ) {
 			try {
-				$this->oauth->fetch( $url );
+				$this->oauth->fetch( $url, $args, $method );
+				$this->response = json_decode( $this->oauth->getLastResponse() );
             } catch ( OAuthException $e ) {
-            	//if ( stristr( $e->debugInfo['headers_recv'], '401') ) // Token is expired, start over
-            		//$this->ci->session->unset_userdata( array( 'api' => array( 'rdio' => '' ) ) );
-            		//print_r( $e->debugInfo['headers_recv'] );
             	print_r( $e );
             }
 			
-			
+			return $this->response;
 		}
 	}
 
@@ -167,6 +179,15 @@ class API_OAuth {
 
 	public function set_access_url ( $url ) {
 		$this->access_url = $url;
+	}
+
+	// The name of the API we're currently working with
+	public function set_api_name ( $name ) {
+		$this->api_name = $name;
+	}
+
+	public function set_user ( $user ) {
+		$this->user = $user;
 	}
 
 }

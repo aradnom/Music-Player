@@ -18,8 +18,8 @@
 
 $config['default']['mongo_hostbase'] = 'localhost:27017';
 $config['default']['mongo_database'] = 'musicplayer';
-$config['default']['mongo_username'] = '';
-$config['default']['mongo_password'] = '';
+$config['default']['mongo_username'] = 'aradnom';
+$config['default']['mongo_password'] = 'qaz102938';
 $config['default']['mongo_persist']  = TRUE;
 $config['default']['mongo_persist_key']	 = 'ci_persist';
 $config['default']['mongo_replica_set']  = FALSE;

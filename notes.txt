@@ -1,0 +1,5 @@
+Ideas:
+
+Gave a button to quickly create a playlist from the most-played songs.
+Randomly insert a song from a REcommended or Social source at time intervals without user intervention.
+Selective shuffle - an area of a playlist can be selected which will shuffle while other songs around it will not.
