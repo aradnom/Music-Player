@@ -3,7 +3,7 @@
 // assumes OAuth 1.0
 // Takes an API Key/Secret and will return an access token in the user's db entry
 
-class API_OAuth {
+class Api_oauth {
 	private $oauth = null;
 
 	// API-specific URLs
