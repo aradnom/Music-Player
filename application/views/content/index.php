@@ -1,4 +1,4 @@
-<?php $this->load->view( 'inc/header.php', array( 'title' => $title, 'api' => $api ) ); ?>
+<?php $this->load->view( 'inc/header.php', array( 'title' => $title ) ); ?>
 
 	<p>Word up, son!</p>
 

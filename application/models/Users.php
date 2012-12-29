@@ -15,9 +15,9 @@ class Users extends CI_Model {
 
 		if ( $this->user ) {
 			// Get current user data from db        
-	        $user_info = $this->Mongo_db->get_where( 'users', array(
+	        $user_info = $this->mongo_db->where( array(
 	            'username' => $this->user
-	        ));
+	        ))->get( 'users' );
 
 	        // Should always be the first row as these are assumed to be unique
 	        return ! empty( $user_info ) ? $user_info[0] : false;

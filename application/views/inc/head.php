@@ -4,10 +4,18 @@
     <script type="text/javascript" src="/assets/js/jquery-1.8.2.min.js"></script>
     <script type="text/javascript" src="/assets/js/jquery.oauth.js"></script>
     <script type="text/javascript" src="/assets/js/jquery.rdio.min.js"></script>
+    <script type="text/javascript" src="/assets/js/underscore.js"></script>
+    <script type="text/javascript" src="/assets/js/backbone.js"></script>
     <script type="text/javascript">
     	$(function () {
 
-    		$('#api-rdio').rdio('<?php echo $api['rdio']['playback_token']; ?>');
+            // Get the playback token and set before setting up controls
+    		$.post( 'rdio_api/get_playback_token', {}, function ( response ) { 
+                var parsed = $.parseJSON( response );
+
+                if ( parsed && parsed.playback_token )
+                    $('#api-rdio').rdio( parsed.playback_token );
+            });
 
     		// Rdio controls
 

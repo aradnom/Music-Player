@@ -1884,6 +1884,7 @@ class Mongo_db
 		{
 			$this->_connection_string = trim($connection_string);
 		}
+
 	}
 	
 	/**

@@ -26,19 +26,15 @@ class Api_oauth {
 	private $response = null;
 	private $user = null;
 
-	public function __construct ( $args ) {
+	public function __construct () {
 
 		if ( function_exists('get_instance') )
 			$this->ci = get_instance();
 
-		if ( ! $args )
-			die( 'User info must be set before using.' );
-
-		$this->user = $args['user'];
-
 	}	
 
 	public function get_oauth_request_token ( $api_key, $shared_secret, $request_url, $authorize_url, $access_url, $callback_url ) {
+		
 		// Saves vars
 		$this->api_key = $api_key;
 		$this->shared_secret = $shared_secret;
@@ -61,6 +57,7 @@ class Api_oauth {
 	        $this->oauth_token = $token['oauth_token'];
 	        $this->oauth_token_secret = $token['oauth_token_secret'];
 	    }
+
 	}
 
 	// If the token is set, request verifier and get access token
@@ -100,16 +97,19 @@ class Api_oauth {
 	}
 
 	public function set_auth () {
+
 		if ( $this->api_key && $this->access_token ) {
 			$this->oauth = new OAuth( $this->api_key, $this->shared_secret );
 			$this->oauth->enableDebug();
 
 			$this->oauth->setToken( $this->access_token, $this->access_secret );
-		}		
+		}
+
 	}
 
 	public function fetch ( $url, $args, $method = OAUTH_HTTP_METHOD_POST ) {
 		if ( $this->oauth ) {
+			print_r( 'boo' );
 			try {
 				$this->oauth->fetch( $url, $args, $method );
 				$this->response = json_decode( $this->oauth->getLastResponse() );
@@ -119,6 +119,10 @@ class Api_oauth {
 			
 			return $this->response;
 		}
+	}
+
+	public function get_api_key () {
+		return $this->api_key;
 	}
 
 	public function get_oauth_token () {
@@ -141,11 +145,11 @@ class Api_oauth {
 		return $this->access_secret;
 	}
 
-	public function set_key ( $key ) {
+	public function set_api_key ( $key ) {
 		$this->api_key = $key;
 	}
 
-	public function set_secret ( $secret ) {
+	public function set_shared_secret ( $secret ) {
 		$this->shared_secret = $secret;
 	}
 
