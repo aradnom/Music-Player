@@ -109,7 +109,6 @@ class Api_oauth {
 
 	public function fetch ( $url, $args, $method = OAUTH_HTTP_METHOD_POST ) {
 		if ( $this->oauth ) {
-			print_r( 'boo' );
 			try {
 				$this->oauth->fetch( $url, $args, $method );
 				$this->response = json_decode( $this->oauth->getLastResponse() );
