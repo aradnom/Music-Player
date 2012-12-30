@@ -42,12 +42,23 @@ class Admin extends CI_Model {
 
 	// Return API key from specific API - chained from this->api()
 	function api_key () {
+
 		return $this->api ? $this->api['api_key'] : false;
+
 	}
 
 	// Return API secret from specific API - chained from this->api()
 	function shared_secret () {
+
 		return $this->api ? $this->api['shared_secret'] : false;
+
+	}
+
+	// Return API root URL - chained from this->api()
+	function api_root () {
+
+		return $this->api ? $this->api['api_root'] : false;
+
 	}
 
 	// Retrieve all admin info from db

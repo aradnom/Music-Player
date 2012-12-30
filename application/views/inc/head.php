@@ -7,11 +7,14 @@
     <script type="text/javascript" src="/assets/js/paper.js"></script>
     <script type="text/javascript" src="/assets/js/playlist.js"></script>    
     <script type="text/javascript" src="/assets/js/underscore.js"></script>
-    <script type="text/javascript" src="/assets/js/backbone.js"></script>    
+    <script type="text/javascript" src="/assets/js/backbone.js"></script>
+    <script type="text/javascript" src="/assets/js/models/lastfm.js"></script>
+    <script type="text/javascript" src="/assets/js/models/spotify.js"></script>     
     <script type="text/javascript">
     	$(function () {
 
             // Get the playback token and set before setting up controls
+
     		$.post( 'rdio_api/get_playback_token', {}, function ( response ) { 
                 var parsed = $.parseJSON( response );
 

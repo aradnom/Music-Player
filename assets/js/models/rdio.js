@@ -5,10 +5,8 @@ $( function () {
 
 	var R = Backbone.Model.extend({
 
-
-
-		play : function () {
-			$('#')
+		play : function ( identifier ) {
+			$('#api-rdio').rdio().play( identifier );
 		}
 
 	});
