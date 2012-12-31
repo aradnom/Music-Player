@@ -4,8 +4,27 @@
 
 $( function () {
 
+	
+
 	var Track = Backbone.Model.extend({
 
+		// Tie this model into the local search cache
+		windowStore : new Backbone.windowStore( 'search' ),
+
+		defaults : {
+			source: null,
+			title: null, 
+			artist: null,
+			icon: null
+		},
+
+		initialize : function ( atts ) {
+			this.defaults.source = atts.source;
+			this.defaults.title = atts.title;
+			this.defaults.artist = atts.artist;
+			this.defaults.icon = atts.icon;
+		}
+		
 	});
 
 });

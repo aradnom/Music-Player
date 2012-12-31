@@ -5,6 +5,9 @@ $( function () {
 
 	var Rdio = Backbone.Model.extend({
 
+		// Tie this model into the local search cache
+		windowStore : new Backbone.windowStore( 'search' ),
+
 		defaults : {
 			api_root: false
 		},

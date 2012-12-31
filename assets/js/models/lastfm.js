@@ -5,6 +5,9 @@ $( function () {
 
 	var Lastfm = Backbone.Model.extend({
 
+		// Tie this model into the local search cache
+		windowStore : new Backbone.windowStore( 'search' ),
+
 		defaults : {
 			api_key: false,
 			api_root: false

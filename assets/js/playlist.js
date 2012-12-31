@@ -22,9 +22,6 @@ $( function () {
 
     paper.view.onFrame = function ( event ) {
         paper.view.draw();
-    }
-
-    // Draw the view now:
-    
+    }    
 
 });

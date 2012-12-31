@@ -5,6 +5,9 @@ $( function () {
 
 	var Spotify = Backbone.Model.extend({
 
+		// Tie this model into the local search cache
+		windowStore : new Backbone.windowStore( 'search' ),
+
 		defaults : {
 			api_root: false
 		},
@@ -15,7 +18,7 @@ $( function () {
 			var _this = this;
 
 			// And the API root
-			$.post( '/admin_api/get_api_root', { api : 'rdio' }, function ( response ) {
+			$.post( '/admin_api/get_api_root', { api : 'spotify' }, function ( response ) {
 				var parsed = $.parseJSON( response );
 
 				if ( parsed && parsed.api_root )
@@ -56,10 +59,20 @@ $( function () {
 		},
 
 		sendQuery : function ( suffix, args ) {
+
+			var _this = this;
 			
-			$.get( this.defaults.api_root + suffix, args, function ( response ) {
-				console.log( response );
+			$.get( this.defaults.api_root + suffix, args, function ( response ) {				
+
+				// For each of the results, create a Track and cache the results
+				if ( response.info.num_results ) {
+
+				}				
+
+				//console.log( response );
+				//_this.save();
 			});
+
 		}
 
 	});
