@@ -98,11 +98,13 @@ class Api_oauth {
 
 	public function set_auth () {
 
-		if ( $this->api_key && $this->access_token ) {
+		if ( $this->api_key && $this->shared_secret ) {
 			$this->oauth = new OAuth( $this->api_key, $this->shared_secret );
 			$this->oauth->enableDebug();
 
-			$this->oauth->setToken( $this->access_token, $this->access_secret );
+			// If OAuth token exists, set that as well
+			if ( $this->access_token && $this->access_secret )
+				$this->oauth->setToken( $this->access_token, $this->access_secret );
 		}
 
 	}

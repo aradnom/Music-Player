@@ -1,4 +1,4 @@
-// Rdio API model - this controls all Rdio API interaction (methods as well as stream control)
+// Spotify API model - this controls all Rdio API interaction (methods as well as stream control)
 // Requires: Backbone - Song
 
 $( function () {
@@ -15,7 +15,7 @@ $( function () {
 			var _this = this;
 
 			// And the API root
-			$.post( '/admin_api/get_api_root', { api : 'spotify' }, function ( response ) {
+			$.post( '/admin_api/get_api_root', { api : 'rdio' }, function ( response ) {
 				var parsed = $.parseJSON( response );
 
 				if ( parsed && parsed.api_root )
@@ -41,8 +41,6 @@ $( function () {
 
 				// Create query object from valid filtered attributes in args
 				var params = _.pick( args, 'page' );
-
-				console.log( 'ran' );
 
 				if ( _.indexOf( types, 'album' ) != -1 )
 					this.sendQuery( 'album.json', _.extend( { q: args.query }, params ));

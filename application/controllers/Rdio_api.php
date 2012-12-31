@@ -12,39 +12,36 @@ class Rdio_api extends CI_Controller {
 
         parent::__construct();
 
-        $this->load->library( 'session' );
-
         // Make sure this is an ajax request
         if ( ! $this->input->is_ajax_request() )
             die( json_encode( array( 'error' => 'No direct access.' ) ) );
 
+        $this->load->library( 'session' );
+
         // Make sure user is set
-        if ( ! $this->session->userdata( 'auth' ) )
-            die( json_encode( array( 'error' => 'Must be logged in to make API requests.' ) ) );
-
-        // Make sure user has Rdio access
-        $this->api_info = $this->session->userdata( 'api' );
-
-        if ( ! $this->api_info['rdio'] )
-            die( json_encode( array( 'error' => 'No Rdio access.' ) ) );
-        else
-            $this->api_info = $this->api_info['rdio']; // We only care about the rdio bits
-
-        // If all of the above checked out, set up the stuff
+        //if ( ! $this->session->userdata( 'auth' ) )
+        //    die( json_encode( array( 'error' => 'Must be logged in to make API requests.' ) ) );
 
         // Load admin information for API keys
         $this->load->model( 'Admin' );
 
+        // Load API model
+        $this->load->model( 'Rdio' );
+
         // Load OAuth library
         $this->load->library( 'Api_oauth' );
+
         $this->api_oauth->set_api_key( $this->Admin->api( 'rdio' )->api_key() );
         $this->api_oauth->set_shared_secret( $this->Admin->api( 'rdio' )->shared_secret() );
 
-        // Load API models
-        $this->load->model( 'Rdio' );
+        // See if user has Rdio access
+        $this->api_info = $this->session->userdata( 'api' );
 
-        // Set auth info from session
-        $this->Rdio->set_authentication( $this->api_info );
+        // If so, set up oauth tokens
+        if ( $this->api_info['rdio'] )
+            $this->api_info = $this->api_info['rdio']; // We only care about the rdio bits
+            
+        $this->Rdio->set_authentication( $this->api_info ); 
 
     }
 

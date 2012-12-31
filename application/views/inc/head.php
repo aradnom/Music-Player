@@ -9,7 +9,8 @@
     <script type="text/javascript" src="/assets/js/underscore.js"></script>
     <script type="text/javascript" src="/assets/js/backbone.js"></script>
     <script type="text/javascript" src="/assets/js/models/lastfm.js"></script>
-    <script type="text/javascript" src="/assets/js/models/spotify.js"></script>     
+    <script type="text/javascript" src="/assets/js/models/spotify.js"></script>  
+    <script type="text/javascript" src="/assets/js/models/rdio.js"></script> 
     <script type="text/javascript">
     	$(function () {
 

@@ -86,14 +86,16 @@ class Rdio extends CI_Model {
 	// Authentication functions //////////////////////////////////////
 	//////////////////////////////////////////////////////////////////
 
-	function set_authentication ( $api_info ) {
+	function set_authentication ( $api_info = false ) {
 
-		if ( $api_info && $this->api_oauth ) {
-			$this->api_oauth->set_access_token( $api_info['access_token'] );
-			$this->api_oauth->set_access_secret( $api_info['access_secret'] );
+		if ( $this->api_oauth ) {
+			if ( $api_info ) {
+				$this->api_oauth->set_access_token( $api_info['access_token'] );
+				$this->api_oauth->set_access_secret( $api_info['access_secret'] );
+				$this->auth = true;
+			}
+
 			$this->api_oauth->set_auth();
-
-			$this->auth = true;
 		}
 			
 	}
