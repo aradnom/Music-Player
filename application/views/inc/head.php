@@ -5,14 +5,23 @@
     <script type="text/javascript" src="/assets/js/jquery.oauth.js"></script>
     <script type="text/javascript" src="/assets/js/jquery.rdio.min.js"></script>
     <script type="text/javascript" src="/assets/js/paper.js"></script>
-    <script type="text/javascript" src="/assets/js/playlist.js"></script>    
+    <script type="text/javascript" src="/assets/js/playlist-canvas.js"></script>    
     <script type="text/javascript" src="/assets/js/underscore.js"></script>
     <script type="text/javascript" src="/assets/js/backbone.js"></script>
-    <script type="text/javascript" src="/assets/js/backbone-window-storage.js"></script>   
+    <script type="text/javascript" src="/assets/js/backbone-window-storage.js"></script>
+
+    <!-- Models -->   
     <script type="text/javascript" src="/assets/js/models/track.js"></script>
     <script type="text/javascript" src="/assets/js/models/lastfm.js"></script>
     <script type="text/javascript" src="/assets/js/models/spotify.js"></script>  
     <script type="text/javascript" src="/assets/js/models/rdio.js"></script> 
+
+    <!-- Collections -->
+    <script type="text/javascript" src="/assets/js/collections/playlist-collection.js"></script>
+
+    <!-- Views -->
+    <script type="text/javascript" src="/assets/js/views/track-view.js"></script>
+    <script type="text/javascript" src="/assets/js/views/playlist-view.js"></script>
     <script type="text/javascript">
     	$(function () {
 

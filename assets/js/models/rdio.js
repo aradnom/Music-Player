@@ -6,7 +6,7 @@ $( function () {
 	var Rdio = Backbone.Model.extend({
 
 		// Tie this model into the local search cache
-		windowStore : new Backbone.windowStore( 'search' ),
+		windowStore : new Backbone.windowStore( 'rdio' ),
 
 		defaults : {
 			api_root: false
@@ -47,8 +47,57 @@ $( function () {
 
 		sendQuery : function ( args ) {
 
-			$.post( '/rdio_api/search', args, function ( response ) { console.log( response ) } );			
+			var _this = this; // Retain reference to the model scope
+
+			$.post( '/rdio_api/search', args, function ( response ) { 
+				var parsed = $.parseJSON( response );
+
+				// Make sure the request was successful and cache the results if so
+				if ( parsed && parsed.status == 'ok' && parsed.result.number_results > 0 ) {
+					_this.sync( parsed.result.results );
+					console.log( parsed.result );
+				}
+				 
+			});			
 	
+		},
+
+		// Sync results to local window cache.  Rdio just returns all results (artist, album and track)
+		// as one lump result array, so the type of each result has to be checked before creating the
+		// Artist, Track and Album models
+		sync : function ( results ) {
+
+			$.each( results, function () {
+
+				switch ( this.type ) {
+					case 'a': // Album
+
+					break;
+
+					case 'r': // aRtist
+
+					break;
+
+					case 't': // Track
+
+						var track = new Backbone.Track({
+							source: 'rdio',
+							title: this.name,
+							// Spotify returns multiple artists in array, so map those out and join 
+							artist: this.artist,
+							album: this.album,
+							icon: this.icon, // Spotify track search doesn't return an album icon
+							rdioKey: this.key
+						});
+
+						// Cache the track
+						track.save();
+						
+					break;
+				}
+										
+			});
+			
 		}
 
 	});

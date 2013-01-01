@@ -4,10 +4,10 @@
 
 $( function () {	
 
-	var Track = Backbone.Model.extend({
+	var Album = Backbone.Model.extend({
 
 		// Tie this model into the local search cache
-		windowStore : new Backbone.windowStore( 'search-track' ),
+		windowStore : new Backbone.windowStore( 'search-album' ),
 
 		defaults : {
 			source: null,
@@ -29,7 +29,7 @@ $( function () {
 
 	});
 
-	// Add the Track model to Backbone itself so other models can reference it
-	Backbone.Track = Track;
+	// Add the Album model to Backbone itself so other models can reference it
+	Backbone.Album = Album;
 
 });

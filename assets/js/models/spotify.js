@@ -6,7 +6,7 @@ $( function () {
 	var Spotify = Backbone.Model.extend({
 
 		// Tie this model into the local search cache
-		windowStore : new Backbone.windowStore( 'search' ),
+		windowStore : new Backbone.windowStore( 'spotify' ),
 
 		defaults : {
 			api_root: false
@@ -60,19 +60,51 @@ $( function () {
 
 		sendQuery : function ( suffix, args ) {
 
-			var _this = this;
+			var _this = this; // Retain reference to the model scope
 			
 			$.get( this.defaults.api_root + suffix, args, function ( response ) {				
 
 				// For each of the results, create a Track and cache the results
 				if ( response.info.num_results ) {
-
+					switch ( suffix ) {
+						case 'album.json': _this.sync( 'album', response.albums ); break;
+						case 'artist.json': _this.sync( 'artist', response.artists ); break;
+						case 'track.json': _this.sync( 'track', response.tracks ); break;
+					}
 				}				
 
-				//console.log( response );
-				//_this.save();
 			});
 
+		},
+
+		sync : function ( type, results ) {
+			switch ( type ) {
+				case 'album':
+
+				break;
+
+				case 'artist':
+
+				break;
+
+				case 'track':
+
+					$.each( results, function () {
+						var track = new Backbone.Track({
+							source: 'spotify',
+							title: this.name,
+							// Spotify returns multiple artists in array, so map those out and join 
+							artist: _.map( this.artists, function ( v ) { return v.name; } ).join( ', ' ),
+							album: this.album.name,
+							icon: null // Spotify track search doesn't return an album icon 
+						});
+
+						// Cache the track
+						track.save();						
+					});
+					
+				break;
+			}
 		}
 
 	});

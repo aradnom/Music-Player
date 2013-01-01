@@ -18,14 +18,14 @@ $(function () {
 			$('body').append( '<div id="' + this.cache + '" style="display: none;"></div>' );
 
 		this.cache = $( '#' + this.cache );
-		
+
 	}
 
 	// Extend the WindowsStore function with CRUD functions
 	_.extend( Backbone.windowStore.prototype, {
 
 		create : function ( model ) {
-			console.log( 'test' );
+			this.cache.append( JSON.stringify( model.toJSON() ) );
 		},
 
 		read : function ( model ) {
@@ -38,6 +38,11 @@ $(function () {
 
 		delete : function ( model ) {
 
+		},
+
+		// Erase the local cache
+		clear : function () {
+			this.cache.html( '' );
 		}
 
 	});
