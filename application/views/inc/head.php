@@ -22,6 +22,8 @@
     <!-- Views -->
     <script type="text/javascript" src="/assets/js/views/track-view.js"></script>
     <script type="text/javascript" src="/assets/js/views/playlist-view.js"></script>
+    <script type="text/javascript" src="/assets/js/views/app.js"></script>
+
     <script type="text/javascript">
     	$(function () {
 

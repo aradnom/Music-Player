@@ -4,7 +4,7 @@ $( function () {
 
 	var PlaylistView = Backbone.View.extend({
 
-		id : 'playlist-list',
+		el : $('#playlist-list'),
 
 		events : {
 			"click #add"	: "addTrack"
@@ -18,7 +18,7 @@ $( function () {
 	});
 
 	// Create the initial playlist
-	Backbone.PlaylistView = new PlaylistView({el: '#playlist-list'}); 
+	Backbone.PlaylistView = new PlaylistView; 
 
 });
 
