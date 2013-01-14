@@ -3,7 +3,8 @@
 
 $( function () {
 
-	var Artist = Backbone.Model.extend({
+	// Save model to Player namespace
+	Player.Models.Artist = Backbone.Model.extend({
 		
 	});
 

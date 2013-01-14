@@ -4,7 +4,8 @@
 
 $( function () {	
 
-	var Album = Backbone.Model.extend({
+	// Save model to the Player namespace for use later
+	Player.Models.Album = Backbone.Model.extend({
 
 		// Tie this model into the local search cache
 		windowStore : new Backbone.windowStore( 'search-album' ),
@@ -28,8 +29,5 @@ $( function () {
 		}
 
 	});
-
-	// Add the Album model to Backbone itself so other models can reference it
-	Backbone.Album = Album;
 
 });

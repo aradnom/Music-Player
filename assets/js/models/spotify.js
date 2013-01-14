@@ -66,6 +66,7 @@ $( function () {
 
 				// For each of the results, create a Track and cache the results
 				if ( response.info.num_results ) {
+					console.log( response );
 					switch ( suffix ) {
 						case 'album.json': _this.sync( 'album', response.albums ); break;
 						case 'artist.json': _this.sync( 'artist', response.artists ); break;
@@ -90,13 +91,14 @@ $( function () {
 				case 'track':
 
 					$.each( results, function () {
-						var track = new Backbone.Track({
+						var track = new Player.Models.Track({
 							source: 'spotify',
 							title: this.name,
 							// Spotify returns multiple artists in array, so map those out and join 
 							artist: _.map( this.artists, function ( v ) { return v.name; } ).join( ', ' ),
 							album: this.album.name,
-							icon: null // Spotify track search doesn't return an album icon 
+							icon: null, // Spotify track search doesn't return an album icon
+							spotifyKey: this.href
 						});
 
 						// Cache the track
@@ -110,6 +112,6 @@ $( function () {
 	});
 
 	// Extend the last.fm API into jQuery
-	$.spotify = new Spotify;
+	Player.spotify = new Spotify;
 
 });

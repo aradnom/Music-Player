@@ -56,35 +56,63 @@ $( function () {
 				var params = _.pick( args, 'limit', 'page' );
 
 				if ( _.indexOf( types, 'album' ) != -1 )
-					$.get( this.defaults.api_root, _.extend( {
-						method: 'album.search',
-						album: args.query,
-						api_key: this.defaults.api_key,
-						format: 'json'
-					}, params ), function ( response ) {
-						console.log( response );
-					});
+					this.sendQuery( _.extend({ method: 'album.search', album: args.query }, params ) );
 
 				if ( _.indexOf( types, 'artist' ) != -1 )
-					$.get( this.defaults.api_root, _.extend( {
-						method: 'artist.search',
-						artist: args.query,
-						api_key: this.defaults.api_key,
-						format: 'json'
-					}, params ), function ( response ) {
-						console.log( response );
-					});
+					this.sendQuery( _.extend({ method: 'artist.search', artist: args.query }, params ) );
 
 				if ( _.indexOf( types, 'track' ) != -1 )
-					$.get( this.defaults.api_root, _.extend( {
-						method: 'track.search',
-						track: args.query,
-						api_key: this.defaults.api_key,
-						format: 'json'
-					}, params ), function ( response ) {
-						console.log( response );
-					});
+					this.sendQuery( _.extend({ method: 'track.search', track: args.query }, params ) );
 
+			}
+
+		},
+
+		sendQuery: function ( args ) {
+
+			var _this = this; // Retain reference to the model scope
+
+			$.get( this.defaults.api_root, _.extend( args, { api_key: this.defaults.api_key, format: 'json' } ), 
+				function ( response ) {
+					if ( response.results['opensearch:totalResults'] > 0 ) {
+						console.log( response );
+						switch ( args.method ) {
+							case 'album.search': _this.sync( 'album', response.results.albummatches.album ); break;
+							case 'artist.search': _this.sync( 'artist', response.results.artistmatches.artist ); break;
+							case 'track.search': _this.sync( 'track', response.results.trackmatches.track ); break;
+						}
+					}						
+			});
+
+		},
+
+		sync: function ( type, results ) {
+
+			switch ( type ) {
+				case 'album':
+
+				break;
+
+				case 'artist':
+
+				break;
+
+				case 'track':
+
+					$.each( results, function () {
+						var track = new Player.Models.Track({
+							source: 'lastfm',
+							title: this.name,
+							artist: this.artist,
+							album: null, // Lastfm doesn't return the album name with the track
+							icon: this.image[1]['#text'] // The image array contains sizes 1-4 - 1 is medium
+						});
+
+						// Cache the track
+						track.save();						
+					});
+					
+				break;
 			}
 
 		}
@@ -92,6 +120,6 @@ $( function () {
 	});
 
 	// Extend the last.fm API into jQuery
-	$.lastfm = new Lastfm;
+	Player.lastfm = new Lastfm;
 
 });
