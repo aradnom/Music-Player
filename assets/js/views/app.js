@@ -8,7 +8,8 @@ $( function () {
 
 		attributes: {
 			activePlayer: null,
-			dragCoefficient: 0.9
+			dragCoefficient: 0.9,
+			gravity: { x: 0, y: -5 } // Pixels per tick (PPT).  No, that's not a unit you'll see anywhere in actual physics
 		},
 
 		initialize: function () {
@@ -159,13 +160,6 @@ $( function () {
 		        			// Reverse the object velocity.  
 		        			paper.view.physicsObject.velocity.x *= -1;
 		        			paper.view.physicsObject.velocity.y *= -1;
-
-		        			// If this is used instead of the above the object will appear to 
-		        			// "thunk" against the bounds instead, which is kind of cute, I dunno /shrug
-		        			/*newPosition = {
-		        				x: paper.view.physicsObject.position.x - paper.view.physicsObject.velocity.x,
-		        				y: paper.view.physicsObject.position.y - paper.view.physicsObject.velocity.y
-		        			}*/
 		        		}		        			
 
 		        		// Update the object with the new position
@@ -176,14 +170,33 @@ $( function () {
 		        		paper.view.physicsObject = null; // Done processing, clear the object out
 
 		        }
+
+		        // Process gravity - this applies to items in the active layer only
+		        if ( app.attributes.gravity ) {
+		        	_.each( paper.project.activeLayer.children, function ( item ) {
+		        		// Update velocity
+		        		item.velocity.x += ( app.attributes.gravity.x * event.delta );
+		        		item.velocity.y += ( app.attributes.gravity.y * event.delta );
+
+		        		var newPosition = { 
+		        			x: item.position.x + item.velocity.x,
+		        			y: item.position.y + item.velocity.y,
+		        		}
+
+		        		item.position = newPosition;
+		        		console.log( item.velocity );
+		        	});
+		        }
 		        	
 		    } 	
 
     		// Set up extra functionality
-    		
-    		_.extend( paper.Group.prototype, {
 
-    			velocity: 0,
+    		_.extend( paper.Item.prototype, {
+
+    			acceleration: { x: 0, y: 0 },
+
+    			velocity: { x: 0, y: 0 },
 
     			tool: new paper.Tool(), // Used to handle sticky mouseUp events
 
@@ -199,7 +212,7 @@ $( function () {
     					return false;
     			}
 
-    		});    			
+    		});   		    			
 
 		}
 

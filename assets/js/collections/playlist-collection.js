@@ -32,8 +32,11 @@ $( function () {
 
 		addToCanvas : function ( track ) {
 
+			var playlist = this;
+			var position = paper.view.center;
+
 			// Content
-			var text = new paper.PointText( { x: paper.view.center.x + 36, y: paper.view.center.y + 20 } );
+			var text = new paper.PointText( { x: position.x + 36, y: position.y + 20 } );
 		    text.content = track.attributes.artist + ' - ' + track.attributes.title;
 		    text.characterStyle = {
 		        font: 'Fjalla One',
@@ -41,33 +44,46 @@ $( function () {
 		    }
 
 		    // Create the icon background
-			var rectangle = new paper.Rectangle( new paper.Point( paper.view.center.x - 2, paper.view.center.y - 2 ), new paper.Size( 34, 34 ) );
+			var rectangle = new paper.Rectangle( new paper.Point( position.x - 2, position.y - 2 ), new paper.Size( 34, 34 ) );
 			var rectPath = new paper.Path.Rectangle( rectangle );
 			rectPath.strokeColor = new paper.RgbColor( 0.15, 0.15, 0.15 );
 			rectPath.fillColor = new paper.RgbColor( 0.1, 0.1, 0.1 );
 
 		    // Create the track icon
 		    var icon = new paper.Raster( $('.track[cache-id="' + _.hash( track.attributes.artist + track.attributes.title ) + '"] .track-icon')[0] );
-		    icon.position = new paper.Point( paper.view.center.x + 15, paper.view.center.y + 15 );
+		    icon.position = new paper.Point( position.x + 15, position.y + 15 );
 		    icon.size = new paper.Size( 30, 30 );
 
 		    // Put the play icon over the icon
 		    var playIcon = new paper.Raster( $('#canvas-assets #icon-play')[0] );
-		    playIcon.position = new paper.Point( paper.view.center.x + 15, paper.view.center.y + 15 );
+		    playIcon.position = new paper.Point( position.x + 15, position.y + 15 );
 		    playIcon.size = new paper.Size( 20, 20 );
 
-			// Create the track group
+			// Create the track group and set the position at the middle of the canvas
 			var trackGroup = new paper.Group([ rectPath, text, icon, playIcon ]);
+			//trackGroup.position = position;
 
-			// Set up track events
+			// Link this track with others in the same group
+
+			_.each( this.models, function ( el ) {				
+				if ( el != track ) {
+					trackGroup.connector = new paper.Path.Line( position, el.paperGroup.position );
+					trackGroup.connector.strokeColor = new paper.RgbColor( 0.15, 0.15, 0.15 );	
+					trackGroup.connector.moveBelow( trackGroup );
+					trackGroup.connector.moveBelow( el.paperGroup );		
+				}							
+			});
+
+			// Events
+
+			var dragging = false; // Dragging flag so we can tell the difference between play click and drag
 
 			playIcon.onClick = function () {
-				console.log( 'click' );
-				Player.Controls.Play( track );
+				if ( ! dragging )
+					Player.Controls.Play( track );
 			}
 
 			trackGroup.onMouseEnter = function () {
-				//console.log( 'whatever' );
 				$(paper.view.element).css( 'cursor', 'pointer' );
 			}
 
@@ -85,12 +101,14 @@ $( function () {
 			}
 
 			// This is a tool because item.onMouseUp will not reliably track the event
-			//var tool = new paper.Tool();
 			trackGroup.tool.onMouseUp = function ( event ) {
 				paper.view.physicsObject = this.parent; // Set the parent as an active physics object
+				dragging = false;
 			}		
 
 			trackGroup.onMouseDrag = function (event) {
+				dragging = true;
+
 				// Save the last delta as the instantaneous velocity for use later
 				this.velocity = event.delta;
 
@@ -101,7 +119,23 @@ $( function () {
 				
 				if ( this.withinBounds( newPosition ) )
 					this.position = newPosition; // Update the current position
+
+				_.each( playlist.models, function ( el ) {				
+					if ( el != track ) {
+						trackGroup.connector.segments[0].point = new paper.Point( 
+							newPosition.x - ( trackGroup.bounds.width / 2 ) + 20,
+							newPosition.y
+						);
+						trackGroup.connector.segments[1].point = new paper.Point( 
+							el.paperGroup.position.x - ( el.paperGroup.bounds.width / 2 ) + 20, 
+							el.paperGroup.position.y 
+						);						
+					}							
+				});
 			}
+
+			// Save a ref to the track group to the track itself for reference later
+			track.paperGroup = trackGroup;
 
 		},
 
@@ -109,7 +143,6 @@ $( function () {
 		save : function () {
 			this.sync();
 		}
-
 
 	});
 
