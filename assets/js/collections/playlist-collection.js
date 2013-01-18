@@ -61,7 +61,6 @@ $( function () {
 
 			// Create the track group and set the position at the middle of the canvas
 			var trackGroup = new paper.Group([ rectPath, text, icon, playIcon ]);
-			//trackGroup.position = position;
 
 			// Link this track with others in the same group
 
@@ -76,10 +75,10 @@ $( function () {
 
 			// Events
 
-			var dragging = false; // Dragging flag so we can tell the difference between play click and drag
+			//var dragging = false; // Dragging flag so we can tell the difference between play click and drag
 
 			playIcon.onClick = function () {
-				if ( ! dragging )
+				if ( ! track.paperGroup.dragging )
 					Player.Controls.Play( track );
 			}
 
@@ -102,12 +101,12 @@ $( function () {
 
 			// This is a tool because item.onMouseUp will not reliably track the event
 			trackGroup.tool.onMouseUp = function ( event ) {
-				paper.view.physicsObject = this.parent; // Set the parent as an active physics object
-				dragging = false;
+				//paper.view.physicsObject = this.parent; // Set the parent as an active physics object
+				this.parent.dragging = false;
 			}		
 
 			trackGroup.onMouseDrag = function (event) {
-				dragging = true;
+				this.dragging = true;
 
 				// Save the last delta as the instantaneous velocity for use later
 				this.velocity = event.delta;
@@ -117,7 +116,7 @@ $( function () {
 					y: this.position.y + event.delta.y
 				}
 				
-				if ( this.withinBounds( newPosition ) )
+				if ( ! this.outOfBounds( newPosition ) )
 					this.position = newPosition; // Update the current position
 
 				_.each( playlist.models, function ( el ) {				
@@ -133,6 +132,19 @@ $( function () {
 					}							
 				});
 			}
+
+			// Set up physics
+			if ( trackGroup.gravity )
+				trackGroup.acceleration = {
+					x: trackGroup.acceleration.x + paper.physics.options.gravity.x,
+					y: trackGroup.acceleration.y + paper.physics.options.gravity.y
+				}
+
+			// Save a special reference to the icon because all the collisions reference it's position
+			trackGroup.icon = icon;
+
+			// Add the new group into the paper physics queue
+			paper.physics.queue.push( trackGroup );
 
 			// Save a ref to the track group to the track itself for reference later
 			track.paperGroup = trackGroup;

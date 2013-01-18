@@ -7,9 +7,7 @@ $( function () {
 		el: $('body'),
 
 		attributes: {
-			activePlayer: null,
-			dragCoefficient: 0.9,
-			gravity: { x: 0, y: -5 } // Pixels per tick (PPT).  No, that's not a unit you'll see anywhere in actual physics
+			activePlayer: null			
 		},
 
 		initialize: function () {
@@ -18,7 +16,7 @@ $( function () {
 			this.searchTimer = false;
 
 			// Initialize the canvas playlist
-			this.setupCanvas();		
+			this.setupCanvas();	
 
 		},
 
@@ -137,60 +135,28 @@ $( function () {
 			// Set up the canvas
 			paper.setup( $('#playlist')[0] );
 
+			// Set up physics
+			paper.physics = {
+				options: {
+					dragCoefficient: 0.95,
+					gravity: { x: 0, y: -75 } // Pixels per tick (PPT).  No, that's not a unit you'll see anywhere in actual physics
+				},
+
+				queue: []
+			}
+
 			// Begin frame updating and process frame events
 		    paper.view.onFrame = function ( event ) {
-		        paper.view.draw();
 
-		        // Look for an active physics object and deal with it if it exists
-		        // This is very basic physics for one object at a time, will extend if it appears necessary
-		        if ( paper.view.physicsObject ) {
-		        	if ( Math.abs( paper.view.physicsObject.velocity.x ) > 0.1 || Math.abs( paper.view.physicsObject.velocity.y ) > 0.1 ) {
-		        		// Update the velocity
-		        		paper.view.physicsObject.velocity.x *= app.attributes.dragCoefficient;
-		        		paper.view.physicsObject.velocity.y *= app.attributes.dragCoefficient;
+		    	// Redraw the frame
+		        paper.view.draw(); 
 
-		        		// Update the position based on the new velocity
-		        		var newPosition = { 
-		        			x: paper.view.physicsObject.position.x + paper.view.physicsObject.velocity.x,
-		        			y: paper.view.physicsObject.position.y + paper.view.physicsObject.velocity.y
-		        		}
-
-		        		// Check if the new position will be out of bounds and reverse the velocity/impulse if so
-		        		if ( ! paper.view.physicsObject.withinBounds( newPosition ) ) {
-		        			// Reverse the object velocity.  
-		        			paper.view.physicsObject.velocity.x *= -1;
-		        			paper.view.physicsObject.velocity.y *= -1;
-		        		}		        			
-
-		        		// Update the object with the new position
-		        		paper.view.physicsObject.position = newPosition;
-
-		        	} else
-
-		        		paper.view.physicsObject = null; // Done processing, clear the object out
-
-		        }
-
-		        // Process gravity - this applies to items in the active layer only
-		        if ( app.attributes.gravity ) {
-		        	_.each( paper.project.activeLayer.children, function ( item ) {
-		        		// Update velocity
-		        		item.velocity.x += ( app.attributes.gravity.x * event.delta );
-		        		item.velocity.y += ( app.attributes.gravity.y * event.delta );
-
-		        		var newPosition = { 
-		        			x: item.position.x + item.velocity.x,
-		        			y: item.position.y + item.velocity.y,
-		        		}
-
-		        		item.position = newPosition;
-		        		console.log( item.velocity );
-		        	});
-		        }
+		  		// Process physics
+		  		app.processPhysics( event );
 		        	
 		    } 	
 
-    		// Set up extra functionality
+    		// Set up extra functionality for paper Items
 
     		_.extend( paper.Item.prototype, {
 
@@ -198,21 +164,103 @@ $( function () {
 
     			velocity: { x: 0, y: 0 },
 
+    			physics: true, // Process physics for this Item
+
+    			gravity: false, // Process gravity for this Item
+
+    			collisions: true, // Can collide with other objects
+
+    			dragging: false, // Physics will not be applied to an object being dragged
+
     			tool: new paper.Tool(), // Used to handle sticky mouseUp events
 
     			// Is this group within the view bounds?  Cause if not, we've got a problem, man
-    			withinBounds : function ( point ) {
+    			// returns which side impacted and by how much
+    			outOfBounds : function ( point ) {
 
-    				if ( ( point.x + ( this.bounds.width / 2 ) ) < paper.view.bounds.width &&
-    					 ( point.y + ( this.bounds.height / 2 ) ) < paper.view.bounds.height &&
-    					 ( point.x - ( this.bounds.width / 2 ) ) > 0 &&
-    					 ( point.y - ( this.bounds.height / 2 ) ) > 0 )
-    					return true;
-    				else
-    					return false;
+    				if ( ! ( ( point.x + ( this.bounds.width / 2 ) ) < paper.view.bounds.width ) )
+    					return { side: 'right', inter: paper.view.bounds.width - ( point.x + ( this.bounds.width / 2 ) ) };
+
+    				if ( ! ( ( point.y + ( this.bounds.height / 2 ) ) < paper.view.bounds.height ) )
+    					return { side: 'bottom', inter: paper.view.bounds.height - ( point.y + ( this.bounds.height / 2 ) ) };
+
+    				if ( ! ( ( point.x - ( this.bounds.width / 2 ) ) > 0 ) )
+    					return { side: 'left', inter: -( point.x - ( this.bounds.width / 2 ) ) };
+
+    				if ( ! ( ( point.y - ( this.bounds.height / 2 ) ) > 0 ) )
+    					return { side: 'top', inter: -( point.y - ( this.bounds.height / 2 ) ) };
+
+    				return false;
     			}
 
     		});   		    			
+
+		},
+
+		// Process the physics queue.  This includes item flicks, collisions and
+		// gravity
+		processPhysics : function ( event ) {
+
+			var app = this;
+			
+			_.each( paper.physics.queue, function ( item ) {
+
+				if ( ! item.dragging && item.physics ) { // These both override all physics effects
+
+					// Check for collisions using simple n^2 detection - will improve if necessary
+					_.each( paper.physics.queue, function ( other ) {
+						if ( item != other && item.collisions && other.collisions ) {
+							var distance = { // Note this isn't sq. rooted - waste of time for what we're doing
+								x: ( item.position.x - other.position.x ) * ( item.position.x - other.position.x ),
+								y: ( item.position.y - other.position.y ) * ( item.position.y - other.position.y )
+							}
+
+							console.log( distance );
+						}
+					})
+
+					// Then update velocity from acceleration with simple drag
+					item.velocity = {
+						x: ( item.velocity.x + ( item.acceleration.x * event.delta ) ) * paper.physics.options.dragCoefficient,
+						y: ( item.velocity.y + ( -item.acceleration.y * event.delta ) ) * paper.physics.options.dragCoefficient
+					}
+
+	        		// Ballpark this so it's not processing physics to infinitesimally small numbers
+					if ( Math.abs( item.velocity.x ) > 0.1 || Math.abs( item.velocity.y ) > 0.1 ) {
+
+		        		// Update the position based on the new velocity
+		        		var newPosition = { 
+		        			x: item.position.x + item.velocity.x,
+		        			y: item.position.y + item.velocity.y
+		        		}
+
+		        		// Check if the new position will be out of bounds and reverse the velocity/impulse if so
+		        		if ( item.outOfBounds( newPosition ) ) {
+		        			// Capture what side it impacted on
+		        			var side = item.outOfBounds( newPosition );
+
+		        			// Resolve interpenetration before changing velocity
+		        			if ( side.side == 'left' || side.side == 'right' )
+		        				newPosition.x += side.inter;
+		        			else
+		        				newPosition.y += side.inter;
+
+		        			// Reverse the object velocity depending on where it hit
+		        			if ( side.side == 'left' || side.side == 'right' )  
+		        				item.velocity.x *= -1;
+		        			else
+		        				item.velocity.y *= -1;
+		        		}		        			
+
+		        		// Update the object with the new position
+		        		item.position = newPosition;
+
+		        	} else
+
+		        		item.velocity = { x: 0, y: 0 }; // Done processing, clear the object out
+				}
+
+			});
 
 		}
 
