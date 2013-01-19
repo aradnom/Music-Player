@@ -139,7 +139,8 @@ $( function () {
 			paper.physics = {
 				options: {
 					dragCoefficient: 0.95,
-					gravity: { x: 0, y: -75 } // Pixels per tick (PPT).  No, that's not a unit you'll see anywhere in actual physics
+					gravity: { x: 0, y: -75 }, // Pixels per tick (PPT).  No, that's not a unit you'll see anywhere in actual physics
+					collisions: true // This can still be overridden on a per-item basis
 				},
 
 				queue: []
@@ -164,9 +165,11 @@ $( function () {
 
     			velocity: { x: 0, y: 0 },
 
+    			mass: 1, // Assuming mass is simply 1 for everybody for the moment, but may change later
+
     			physics: true, // Process physics for this Item
 
-    			gravity: false, // Process gravity for this Item
+    			gravity: true, // Process gravity for this Item
 
     			collisions: true, // Can collide with other objects
 
@@ -193,31 +196,32 @@ $( function () {
     				return false;
     			}
 
-    		});   		    			
+    		});
 
 		},
 
 		// Process the physics queue.  This includes item flicks, collisions and
-		// gravity
+		// gravity.  This makes certain useful assumptions - icons are square and
+		// always have the same mass (subject to change)
 		processPhysics : function ( event ) {
 
 			var app = this;
 			
 			_.each( paper.physics.queue, function ( item ) {
 
+				// First thing - update the velocity manually if dragging - this is here instead of the
+				// drag event because we need to know if icon is at rest at the end of the drag
+				if ( item.dragging ) {
+					item.velocity = new paper.Point( item.position.x - item.lastPosition.x, item.position.y - item.lastPosition.y );
+					item.lastPosition = item.position;					
+				}				
+
 				if ( ! item.dragging && item.physics ) { // These both override all physics effects
 
 					// Check for collisions using simple n^2 detection - will improve if necessary
-					_.each( paper.physics.queue, function ( other ) {
-						if ( item != other && item.collisions && other.collisions ) {
-							var distance = { // Note this isn't sq. rooted - waste of time for what we're doing
-								x: ( item.position.x - other.position.x ) * ( item.position.x - other.position.x ),
-								y: ( item.position.y - other.position.y ) * ( item.position.y - other.position.y )
-							}
-
-							console.log( distance );
-						}
-					})
+					// This essentially assumes squares/spheres, but the x/y properties could be used
+					// to deal with rectangles if necessary later
+					app.processCollisions( item );
 
 					// Then update velocity from acceleration with simple drag
 					item.velocity = {
@@ -261,6 +265,120 @@ $( function () {
 				}
 
 			});
+
+		},
+
+		processCollisions : function ( item ) {
+
+			var app = this;
+
+			// Manual method, maaaaybe faaster...?
+			/*_.each( paper.physics.queue, function ( other ) {
+				if ( item != other && item.collisions && other.collisions && other.children['hitbox'] && item.children['hitbox'] ) {
+					// Update hitbox positions based on offset
+					// Note this isn't sq. rooted - waste of time for what we're doing
+					var distance = ( ( ( item.position.x - item.children['hitbox'].offset.x ) - ( other.position.x - other.children['hitbox'].offset.x ) ) * 
+						( ( item.position.x - item.children['hitbox'].offset.x ) - ( other.position.x - other.children['hitbox'].offset.x ) ) ) +
+						( ( ( item.position.y - item.children['hitbox'].offset.y ) - ( other.position.y - other.children['hitbox'].offset.y ) ) * 
+						( ( item.position.y - item.children['hitbox'].offset.y ) - ( other.position.y - other.children['hitbox'].offset.y ) ) );							
+
+					// Also squared
+					var size = ( item.children['hitbox'].bounds.width * item.children['hitbox'].bounds.width );
+
+					var normal = new paper.Point( item.position.x - other.position.x, item.position.y - other.position.y );
+
+					console.log( normal.getAngle() );
+
+					// Check if a hit has occurred
+					if ( distance < size ) {
+						console.log( 'hit' );
+					}
+						
+				}
+			});*/
+
+			// Paper methods
+			_.each( paper.physics.queue, function ( other ) {
+				if ( item != other && item.collisions && other.collisions && other.children['hitbox'] && item.children['hitbox'] ) {
+					var here = new paper.Point( item.position.x - item.children['hitbox'].offset.x, item.position.y - item.children['hitbox'].offset.y );
+					var there = new paper.Point( other.position.x - other.children['hitbox'].offset.x, other.position.y - other.children['hitbox'].offset.y );				
+
+					// Check if a hit has occurred
+					if ( here.isClose( there, item.children['hitbox'].bounds.width ) ) {
+						// Get the collision normal and adjust the quadrant for left/top/right/bottom = 1,2,3,4
+						var normal = new paper.Point( here.x - there.x, here.y - there.y );
+						normal = normal.rotate( 45 );
+
+						// Get what side the collision occurred on
+						var side = normal.getQuadrant();
+
+						// Get the distance between the points
+						// Uses sqrt which is costly but necessary for resolving interpenetration
+						var distance = here.getDistance( there, false );
+						var inter = item.children['hitbox'].bounds.width - distance;
+
+						// Resolve the collision based on the side
+						switch ( side ) {
+							case 1: // left
+								var newItemPos = { x: item.position.x + ( inter / 2 ), y: item.position.y };
+								var newOtherPos = { x: other.position.x - ( inter / 2 ), y: other.position.y };
+							break;
+
+							case 2: // top
+								var newItemPos = { x: item.position.x, y: item.position.y + ( inter / 2 ) };
+								var newOtherPos = { x: other.position.x, y: other.position.y - ( inter / 2 ) };
+							break;
+
+							case 3: // right
+								var newItemPos = { x: item.position.x - ( inter / 2 ), y: item.position.y };
+								var newOtherPos = { x: other.position.x + ( inter / 2 ), y: other.position.y };
+							break;
+
+							case 4: // bottom
+								var newItemPos = { x: item.position.x, y: item.position.y - ( inter / 2 ) };
+								var newOtherPos = { x: other.position.x, y: other.position.y + ( inter / 2 ) };
+							break;
+						}
+
+						// Set the new position if it's not out of bounds
+						if ( ! item.outOfBounds( newItemPos ) )
+							item.position = newItemPos;
+						if ( ! other.outOfBounds( newOtherPos ) )
+							other.position = newOtherPos;
+
+						// Then figure out the new velocity.  This simplifies down to essentially 1
+						// dimension if we only worry about velocity in the direction of contact
+						if ( side == 1 || side == 3 ) {
+							var newVelocities = app.processVelocity( item.mass, other.mass, item.velocity.x, other.velocity.x );
+
+							item.velocity = { x: newVelocities.v1f, y: item.velocity.y };
+							other.velocity = { x: newVelocities.v2f, y: other.velocity.y };
+						} else {
+							var newVelocities = app.processVelocity( item.mass, other.mass, item.velocity.y, other.velocity.y );
+
+							item.velocity = { x: item.velocity.x, y: newVelocities.v1f };
+							other.velocity = { x: other.velocity.x, y: newVelocities.v2f };
+						}						
+						
+					}
+					
+				}
+				
+			});
+
+		},
+
+		// Solve velocity for simply 1D elastic collections
+		// Generally only one item will be moving but this will still account for
+		// both objects have initial velocity
+		processVelocity : function ( m1, m2, v1i, v2i ) {
+
+			var velocities = {};
+
+			velocities.v1f = ( v1i * ( m1 - m2 ) + ( 2 * m2 * v2i ) ) / ( m1 + m2 );
+			velocities.v2f = velocities.v1f - v2i + v1i;
+
+			return velocities;
 
 		}
 

@@ -48,11 +48,12 @@ $( function () {
 			var rectPath = new paper.Path.Rectangle( rectangle );
 			rectPath.strokeColor = new paper.RgbColor( 0.15, 0.15, 0.15 );
 			rectPath.fillColor = new paper.RgbColor( 0.1, 0.1, 0.1 );
+			rectPath.name = 'hitbox'; // Define the icon bg as the group hitbox for collisions
 
 		    // Create the track icon
 		    var icon = new paper.Raster( $('.track[cache-id="' + _.hash( track.attributes.artist + track.attributes.title ) + '"] .track-icon')[0] );
 		    icon.position = new paper.Point( position.x + 15, position.y + 15 );
-		    icon.size = new paper.Size( 30, 30 );
+		    icon.size = new paper.Size( 30, 30 );		    
 
 		    // Put the play icon over the icon
 		    var playIcon = new paper.Raster( $('#canvas-assets #icon-play')[0] );
@@ -61,6 +62,9 @@ $( function () {
 
 			// Create the track group and set the position at the middle of the canvas
 			var trackGroup = new paper.Group([ rectPath, text, icon, playIcon ]);
+
+			// Set the initial last position as the current position
+			trackGroup.lastPosition = trackGroup.position;
 
 			// Link this track with others in the same group
 
@@ -108,9 +112,6 @@ $( function () {
 			trackGroup.onMouseDrag = function (event) {
 				this.dragging = true;
 
-				// Save the last delta as the instantaneous velocity for use later
-				this.velocity = event.delta;
-
 				var newPosition = {
 					x: this.position.x + event.delta.x,
 					y: this.position.y + event.delta.y
@@ -119,6 +120,7 @@ $( function () {
 				if ( ! this.outOfBounds( newPosition ) )
 					this.position = newPosition; // Update the current position
 
+				// Update group connectors
 				_.each( playlist.models, function ( el ) {				
 					if ( el != track ) {
 						trackGroup.connector.segments[0].point = new paper.Point( 
@@ -140,8 +142,12 @@ $( function () {
 					y: trackGroup.acceleration.y + paper.physics.options.gravity.y
 				}
 
-			// Save a special reference to the icon because all the collisions reference it's position
-			trackGroup.icon = icon;
+			// If a hitbox exists, save its offset from the parent
+			if ( trackGroup.children['hitbox'] )
+				trackGroup.children['hitbox'].offset = {
+					x: trackGroup.position.x - trackGroup.children['hitbox'].position.x,
+					y: trackGroup.position.y - trackGroup.children['hitbox'].position.y
+				}
 
 			// Add the new group into the paper physics queue
 			paper.physics.queue.push( trackGroup );
