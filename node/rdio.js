@@ -1,5 +1,6 @@
+// Necessary requires
 var express = require( 'express' );
-var rdio = express();
+
 
 rdio.get( '/', function ( req, res ) {
 	var body = 'Boo!';
@@ -8,5 +9,5 @@ rdio.get( '/', function ( req, res ) {
 	res.end( body );
 });
 
-rdio.listen( 5555 );
-console.log( 'Listening on port 5555...' );
+rdio.listen( 7346 );
+console.log( 'Listening on port 7346...' );
