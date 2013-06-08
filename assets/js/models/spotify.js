@@ -35,8 +35,7 @@ $( function () {
 
 			if ( this.defaults.api_root ) {
 				// Make sure everything's cool
-				if ( ! args.types || ! args.query )
-					return false;
+				if ( ! args.types || ! args.query ) return false;
 
 				// Spotify splits its search into separate methods, so process each one
 				// Note that this means results will report in at different times for this API
@@ -45,14 +44,17 @@ $( function () {
 				// Create query object from valid filtered attributes in args
 				var params = _.pick( args, 'page' );
 
-				if ( _.indexOf( types, 'album' ) != -1 )
+				if ( _.indexOf( types, 'album' ) != -1 ) {
 					this.sendQuery( 'album.json', _.extend( { q: args.query }, params ));
+				}					
 
-				if ( _.indexOf( types, 'artist' ) != -1 )
+				if ( _.indexOf( types, 'artist' ) != -1 ) {
 					this.sendQuery( 'artist.json', _.extend( { q: args.query }, params ));
+				}					
 
-				if ( _.indexOf( types, 'track' ) != -1 )
+				if ( _.indexOf( types, 'track' ) != -1 ) {
 					this.sendQuery( 'track.json', _.extend( { q: args.query }, params ));
+				}				
 
 			}
 

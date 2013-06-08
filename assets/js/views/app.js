@@ -139,7 +139,7 @@ $( function () {
 			paper.physics = {
 				options: {
 					dragCoefficient: 0.95,
-					gravity: { x: 0, y: -75 }, // Pixels per tick (PPT).  No, that's not a unit you'll see anywhere in actual physics
+					gravity: { x: 0, y: -50 }, // Pixels per tick (PPT).  No, that's not a unit you'll see anywhere in actual physics
 					collisions: true // This can still be overridden on a per-item basis
 				},
 
@@ -162,19 +162,12 @@ $( function () {
     		_.extend( paper.Item.prototype, {
 
     			acceleration: { x: 0, y: 0 },
-
     			velocity: { x: 0, y: 0 },
-
     			mass: 1, // Assuming mass is simply 1 for everybody for the moment, but may change later
-
     			physics: true, // Process physics for this Item
-
     			gravity: true, // Process gravity for this Item
-
     			collisions: true, // Can collide with other objects
-
     			dragging: false, // Physics will not be applied to an object being dragged
-
     			tool: new paper.Tool(), // Used to handle sticky mouseUp events
 
     			// Is this group within the view bounds?  Cause if not, we've got a problem, man
