@@ -5,3 +5,4 @@ api-lib
 api
 license.txt
 *.psd
+.DS_Store

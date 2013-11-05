@@ -1,0 +1,43 @@
+// Mixins
+
+@mixin down-arrow( $size: 10px, $color: $dark )
+	border-style: solid
+	border-width: $size / 1.15 $size / 2 0 $size / 2
+	border-color: $color transparent transparent transparent
+
+// Icon fonts
+@mixin font-icon($char, $color: '', $size: '', $line-height: '')
+	&:before
+		font-family: 'pp-icomoon'
+		font-weight: normal
+		font-style: normal
+		vertical-align: -15%
+		content: '#{$char} '
+		@if $color != ''
+			color: $color
+
+		@if $size != ''
+			font-size: $size
+
+		@if $line-height != ''
+			line-height: $line-height
+
+		@content
+
+@mixin font-icon-after($char, $color: '', $size: '', $line-height: '')
+	&:after
+		font-family: 'pp-icomoon'
+		font-weight: normal
+		font-style: normal
+		vertical-align: -15%
+		content: ' #{$char}'
+		@if $color != ''
+			color: $color
+
+		@if $size != ''
+			font-size: $size
+
+		@if $line-height != ''
+			line-height: $line-height
+
+		@content
