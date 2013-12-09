@@ -1,12 +1,9 @@
 // Rdio API model - this controls all Rdio API interaction (methods as well as stream control)
 // Requires: Backbone - Song
 
-$( function () {
+var Player = ( function ( player ) {
 
-	var Lastfm = Backbone.Model.extend({
-
-		// Tie this model into the local search cache
-		windowStore : new Backbone.windowStore( 'lastfm' ),
+	player.Models.Lastfm = Backbone.Model.extend({
 
 		defaults : {
 			api_key: false,
@@ -19,7 +16,7 @@ $( function () {
 			var _this = this;
 
 			// Get the last.fm API key before proceeding
-			$.post( '/admin_api/get_api_key', { api : 'lastfm' }, function ( response ) {
+			/*$.post( '/admin_api/get_api_key', { api : 'lastfm' }, function ( response ) {
 				var parsed = $.parseJSON( response );
 
 				if ( parsed && parsed.api_key )
@@ -32,7 +29,7 @@ $( function () {
 
 				if ( parsed && parsed.api_root )
 					_this.defaults.api_root = parsed.api_root;
-			});
+			});*/
 
 		},
 
@@ -120,6 +117,8 @@ $( function () {
 	});
 
 	// Extend the last.fm API into jQuery
-	Player.lastfm = new Lastfm;
+	Player.lastfm = new player.Models.Lastfm;
 
-});
+	return player;
+
+})( Player || { Models: {}, Views: {}, Collections: {}, Cache: {} } );

@@ -1,0 +1,24 @@
+.sprite
+	background: $sprite-sheet
+	display: inline-block
+
+	@each $icon in sprite_names($sprite-sheet)
+		&.#{$icon}
+			background-position: sprite-position($sprite-sheet, $icon)
+			+sprite-dimensions($sprite-sheet, $icon)
+
+			&.v-center
+				margin-top: ((sprite-height($icon) / 2) * -1)
+
+			&.h-center
+				margin-left: ((sprite-width($icon) / 2) * -1)
+
+	//+media(retina)
+	//	background: $sprite-sheet-retina
+	//	+background-size( round(image-width(sprite-path($sprite-sheet-retina))/2) round(image-height(sprite-path($sprite-sheet-retina))/2) )
+
+	//	@each $icon in sprite_names($sprite-sheet)
+	//		&.#{$icon}
+	//			background-position: 0 round(nth( sprite-position($sprite-sheet-retina, $icon), 2) / 2)
+
+	

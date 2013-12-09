@@ -1,0 +1,46 @@
+// Search
+
+.menu__search
+	&.focus
+		.icon-magnifier
+			color: $grey-medium
+
+.menu__search__query
+	width: 16em
+
+.icon-magnifier
+	display: inline-block
+	font-size: 30px
+	top: 0.2em
+	margin-right: 0.2em
+	color: $grey-text
+	+transition-duration(0.3s)
+	
+.menu__search__keep-typing
+	position: absolute
+	bottom: 0.2em
+	right: 0.7em
+	display: none
+	color: $grey-medium
+	
+.menu__search__results
+	position: absolute
+	top: 2.2em
+	right: 0
+	width: 100%
+	text-align: right
+	padding: 1em
+	
+	.result
+		.result__container > div
+			display: inline-block
+			
+		.result__content
+			overflow: hidden
+			max-width: 80%
+			white-space: nowrap
+			line-height: 0.9em
+			+transition-duration(0.3s)
+			
+			&:hover
+				color: $grey-medium

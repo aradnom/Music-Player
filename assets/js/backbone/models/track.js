@@ -5,42 +5,35 @@
 // both to a standard list playlist as well as to the playlist
 // canvas via the playlist view.
 
-$( function () {	
+var Player = ( function ( player ) {
 
 	// Save model to the Player namespace for use later
-	Player.Models.Track = Backbone.Model.extend({
+	player.Models.Track = Backbone.Model.extend({
 
-		// Tie this model into the local search caches
-		windowStore : new Backbone.windowStore( 'playlist' ),
-
-		localStore : new Backbone.localStore( Player.Cache, 'Search' ),
-
-		defaults : {
+		defaults: {
 			source: null,
 			title: null, 
 			artist: null,
 			album: null,
 			icon: null,
+			relevance: null,
 			rdioKey: null, // Rdio's play key
-			spotifyKey: null // Spotify's play href
+			spotifyKey: null, // Spotify's play href
 		},
 
-		initialize : function ( atts, options ) {
+		initialize: function ( atts, options ) {
 			this.defaults.source = atts.source;
 			this.defaults.title = atts.title;
 			this.defaults.artist = atts.artist;
 			this.defaults.album = atts.album;
 			this.defaults.icon = atts.icon;
+			this.defaults.relevance = atts.relevance;
 			this.defaults.rdioKey = atts.rdioKey;
 			this.defaults.spotifyKey = atts.spotifyKey;
-
-			// Process options
-			/*if ( options ) {
-				if ( options.cache ) // Change the cache element
-					this.windowStore = new Backbone.windowStore( options.cache );
-			}*/
 		}
 
 	});
 
-});
+	return player;
+
+})( Player || { Models: {}, Views: {}, Collections: {}, Cache: {} } );

@@ -8,6 +8,7 @@ sass_dir = "assets/sass"
 images_dir = "assets/img"
 javascripts_dir = "assets/js"
 
+# Plugins
 require 'breakpoint'
 
 # You can select your preferred output style here (can be overridden via the command line):

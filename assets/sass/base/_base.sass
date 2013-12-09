@@ -1,0 +1,22 @@
+/* Top-level styles */
+
+body
+	background: url('../img/background.jpg')
+	background-size: cover
+	font: $font-light
+	font-size: $base-font-size
+	color: $grey-text
+
+div, section, article, h1, h2, h3, ul, li, header, footer
+	position: relative
+
+input
+	font: $font-light
+	background: $grey-dark
+	border: none
+	padding: 0.3em 0.7em
+	color: $grey-medium
+	+transition-duration(0.3s)
+	
+	&:focus
+		color: $grey-light

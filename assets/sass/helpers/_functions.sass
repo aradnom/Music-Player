@@ -1,0 +1,34 @@
+@function strip-units($number)
+	@return $number / ($number * 0 + 1)
+
+@function em($target, $context: $base-font-size)
+	@if $target == 0
+		@return 0
+	@return $target / $context + 0em
+
+@function px($target, $context: $base-font-size)
+	@if $target == 0
+		@return 0
+	@return strip-units($target) * $context
+
+@function rem($target, $context: $base-font-size)
+	@if $target == 0
+		@return 0
+	@return $target / $base-font-size + 0rem
+
+@function column-width($column-count)
+	@return ( $column-count / $grid-column-count ) * 100%
+
+@function match($haystack, $needle)
+	@each $item in $haystack
+		$index: index($item, $needle)
+		@if $index
+			$return: if($index == 1, 2, $index)
+			@return nth($item, $return)
+	@return false
+
+@function sprite-height($icon)
+	@return (image-height( sprite-file($sprite-sheet, $icon) ))
+
+@function sprite-width($icon)
+	@return (image-width( sprite-file($sprite-sheet, $icon) ))

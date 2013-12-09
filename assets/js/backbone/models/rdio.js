@@ -1,12 +1,9 @@
 // Rdio API model - this controls all Rdio API interaction (methods as well as stream control)
 // Requires: Backbone - Song
 
-$( function () {
+var Player = ( function ( player ) {
 
-	var Rdio = Backbone.Model.extend({
-
-		// Tie this model into the local search cache
-		windowStore : new Backbone.windowStore( 'rdio' ),
+	player.Models.Rdio = Backbone.Model.extend({
 
 		defaults : {
 			api_root: false
@@ -103,6 +100,8 @@ $( function () {
 	});
 
 	// Put the rdio object into the player parent object
-	Player.rdio = new Rdio;
+	Player.rdio = new player.Models.Rdio;
 
-});
+	return player;
+
+})( Player || { Models: {}, Views: {}, Collections: {}, Cache: {} } );

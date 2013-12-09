@@ -1,14 +1,55 @@
-// Mixins
+=triangle( $pointy-side, $bg-color, $t-size, $c-size  )
+	$side: opposite-position($pointy-side) //Reverse the side
+	border: $t-size solid transparent
+	border-#{$side}: $c-size solid $bg-color
 
-@mixin down-arrow( $size: 10px, $color: $dark )
-	border-style: solid
-	border-width: $size / 1.15 $size / 2 0 $size / 2
-	border-color: $color transparent transparent transparent
+=media($media-query, $res: 0em, $res2: 0em)
+	@if $media-query == retina
+		@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and ( min--moz-device-pixel-ratio: 2), only screen and ( -o-min-device-pixel-ratio: 2/1), only screen and ( min-device-pixel-ratio: 2), only screen and ( min-resolution: 192dpi), only screen and ( min-resolution: 2dppx)
+			@content
+
+	@if $media-query == min
+		@media screen and ( min-width: $res )
+			@content
+
+	@if $media-query == max
+		@media screen and ( max-width: $res )
+			@content
+
+	@if $media-query == minmax
+		@media screen and ( min-width: $res ) and ( max-width: $res2 )
+			@content
+
+=grid($column-span, $grid-column-count: $grid-column-count, $grid-padding: $grid-gutter )
+	width: ( $column-span / $grid-column-count ) * 100%
+	padding-left: $grid-padding
+	padding-right: $grid-padding
+
+=grid-wrap()
+	width: 100%
+	max-width: $grid-max-width
+	margin: 0 auto
+
+=push( $column-span )
+	margin-left: ( $column-span / $grid-column-count ) * 100%
+
+=pull( $column-span )
+	margin-left: (( $column-span / $grid-column-count ) * 100%) * -1
+
+=icon-font()
+	font-family: 'UPDATE_WITH_ICON_FONT_NAME'
+	speak: none
+	font-style: normal
+	font-weight: normal
+	font-variant: normal
+	text-transform: none
+	line-height: 1
+	-webkit-font-smoothing: antialiased
 
 // Icon fonts
-@mixin font-icon($char, $color: '', $size: '', $line-height: '')
+=font-icon($char, $color: '', $size: '', $line-height: '')
 	&:before
-		font-family: 'pp-icomoon'
+		font-family: 'icons'
 		font-weight: normal
 		font-style: normal
 		vertical-align: -15%
@@ -24,9 +65,9 @@
 
 		@content
 
-@mixin font-icon-after($char, $color: '', $size: '', $line-height: '')
+=font-icon-after($char, $color: '', $size: '', $line-height: '')
 	&:after
-		font-family: 'pp-icomoon'
+		font-family: 'icons'
 		font-weight: normal
 		font-style: normal
 		vertical-align: -15%
@@ -41,3 +82,13 @@
 			line-height: $line-height
 
 		@content
+
+=sprite($icon)
+	background: $sprite-sheet
+	background-position: sprite-position($sprite-sheet, $icon)
+	+sprite-dimensions($sprite-sheet, $icon)
+
+	//+media(retina)
+	//	background: $sprite-sheet-retina
+	//	+background-size( round(image-width(sprite-path($sprite-sheet-retina))/2) round(image-height(sprite-path($sprite-sheet-retina))/2) )
+	//	background-position: 0 round(nth( sprite-position($sprite-sheet-retina, $icon), 2) / 2)

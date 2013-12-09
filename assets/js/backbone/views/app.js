@@ -1,8 +1,8 @@
 // Where the magic happens
 
-$( function () {
+var Player = ( function ( player ) {	
 
-	var App = Backbone.View.extend({
+	player.Views.App = Backbone.View.extend({
 		
 		el: $('body'),
 
@@ -13,98 +13,100 @@ $( function () {
 		initialize: function () {
 
 			// Starting variables
-			this.searchTimer = false;
+			var _this = this;
 
-			// Initialize the canvas playlist
-			this.setupCanvas();	
+			// Stuff that should always happen
+			this.globalSetup();
+
+			// Authenticate with Spotify for streaming
+			// Don't do anything else if this doesn't work because we need at least at least
+			// one streaming API or this will be a very short trip
+			this.setupSpotify( function () {
+				player.Config.streaming.spotify = player.Spotify;
+
+				// Initialize the canvas playlist
+				_this.setupCanvas();
+
+				// Setup jPlayer (used for custom server streams like Spotify)
+				_this.setupjPlayer();
+			});
 
 		},
 
-		events : {
-			'keyup #search' : 'search',
-			'click #search-results .play' : 'playFromSearch',
-			'click #search-results .add-to-playlist' : 'addTrackToPlaylist',
-			'click #controls #stop' : 'stop'
+		events: {
+			
+		},
+
+		globalSetup: function () {
+			// Copyright
+			var now = new Date;
+			$('.copyright__year').text( now.getUTCFullYear() );
 		},
 
 		// Standard controls - can be used from anywhere in the app and handle logic
 		// such as figuring out a play source. These are just aliases of the below
 		// for convenience
-		Controls : {
+		Controls: {
 
-			Play : function ( track ) {
-				Player.play( track );
+			TurnOn: function () {
+				$('.controls').addClass( 'on' );
 			},
 
-			Stop : function () {
-				Player.stop();				
+			TurnOff: function () {
+				$('.controls').removeClass( 'on' );
 			},
 
-			Next : function () {
-				Player.next();
+			Play: function ( track ) {
 			},
 
-			Previous : function () {
-				Player.previous();
+			Stop: function () {
+			},
+
+			Next: function () {
+			},
+
+			Previous: function () {
 			}
 
 		},
 
-		play : function ( track ) {
-			if ( track ) {
-				// Attempt to play the track if it has a playable source
-				if ( track.attributes.source == 'rdio' ) {
-					$('#api-rdio').rdio().play( track.attributes.rdioKey );
-					this.attributes.activePlayer = 'rdio';
-				}					
+		// Track title, duration, that kind of thing
+		Meta: {
+			TurnOn: function () {
+				$('.meta').addClass( 'on' );
+			},
+
+			TurnOff: function () {
+				$('.meta').removeClass( 'on' );
+			},
+
+			SetTitle: function ( title ) {
+				$('.meta__title').text( title );
 			}
 		},
 
-		stop : function () {
-			switch ( this.attributes.activePlayer ) {
-				case 'rdio': $('#api-rdio').rdio().stop(); break;
-			}				
+		// Will attempt to play track via the specified service.  This means it will
+		// the service's PlayTrack function with the track, so the track must be the correct
+		// format for the service
+		PlayTrack: function ( track, artist, title, service ) {
+			player.Config.streaming[service].PlayTrack( track );
+
+			if ( artist || title ) {
+				player.App.Meta.TurnOn();
+				player.App.Meta.SetTitle( artist + ' - ' + title );
+			}
 		},
 
-		next : function () {
-
-		},
-
-		previous : function () {
-
-		},
-
-		search : function () {
-			var _this = this;
-
-			if ( $('#search').val().length > 2 ) {
-				
-				// Start a timer on keyup
-				if ( this.searchTimer )
-					clearTimeout( this.searchTimer );
-
-				// Only run search if no keys have been pressed in the last half second
-				// 2nd arg is a callback function to run on successful search response
-				this.searchTimer = setTimeout( function () {
-					Player.rdio.search({ query: $('#search').val(), types: 'track' }, _this.addToSearchResults );
-					//Player.spotify.search({ query: $('#search').val(), types: 'track' }, this.addToSearchResults );
-					//Player.lastfm.search({ query: $('#search').val(), types: 'track' }, this.addToSearchResults );
-				}, 500 );
-					
-			}			
-		},
-
-		addTrackToPlaylist : function ( event ) {
+		addTrackToPlaylist: function ( event ) {
 
 			var trackEl = $(event.currentTarget).parents('.track');			
 			track = this.retrieveFromCache( trackEl.children('.track-artist').html(), trackEl.children('.track-title').html() );
 
-			if ( track )
-				Player.Playlist.create( track.attributes );
+			if ( track ) Player.Playlist.create( track.attributes );
 
 		},
 
-		playFromSearch : function ( event ) {
+		playFromSearch: function ( event ) {
 
 			var trackEl = $(event.currentTarget).parents('.track');			
 			track = this.retrieveFromCache( trackEl.children('.track-artist').html(), trackEl.children('.track-title').html() );
@@ -114,7 +116,7 @@ $( function () {
 		},
 
 		// Callback'd function - add the passed models to the current search results list
-		addToSearchResults : function ( model ) {
+		addToSearchResults: function ( model ) {
 			console.log( Player.Views );
 
 			//var track = Player.Playlist.create({source: 'rdio', title: 'whatever', artist: 'whatever'});
@@ -124,16 +126,18 @@ $( function () {
 
 		// Retrieve the track element from the cache if it exists
 		// Search contains the current search cache and is keyed by a hash of artist + track title
-		retrieveFromCache : function ( artist, title ) {
+		retrieveFromCache: function ( artist, title ) {
 			return Player.Cache.Search[ _.hash( artist + title ) ];
 		},
 
-		setupCanvas : function () {
+		setupCanvas: function () {
 
 			var app = this;
 
 			// Set up the canvas
-			paper.setup( $('#playlist')[0] );
+			paper.setup( $('canvas.playlist')[0] );
+
+			$('canvas.playlist').css({ width: '100%', height: '100%' });
 
 			// Set up physics
 			paper.physics = {
@@ -172,7 +176,7 @@ $( function () {
 
     			// Is this group within the view bounds?  Cause if not, we've got a problem, man
     			// returns which side impacted and by how much
-    			outOfBounds : function ( point ) {
+    			outOfBounds: function ( point ) {
 
     				if ( ! ( ( point.x + ( this.bounds.width / 2 ) ) < paper.view.bounds.width ) )
     					return { side: 'right', inter: paper.view.bounds.width - ( point.x + ( this.bounds.width / 2 ) ) };
@@ -193,10 +197,45 @@ $( function () {
 
 		},
 
+		setupSpotify: function ( callback ) {
+
+			$.getJSON( player.Config.spotify.auth_url, function ( response ) {
+				if ( response.success ) callback();
+				if ( response.error ) console.error( 'Could not authenticate with Spotify.' );
+			});
+
+		},
+
+		// Set up audio player
+		setupjPlayer: function () {
+
+			$('.jplayer').jPlayer({
+				ready: function ( event ) {
+					player.Config.jplayer_ready = true;
+					player.$jPlayer = $('.jplayer');
+				},
+				pause: function() {
+					$(this).jPlayer("clearMedia");
+				},
+				error: function ( event ) {
+					console.log( event.jPlayer.error );
+				},
+				play: function ( event ) {
+					player.App.Controls.TurnOn();
+				},
+				swfPath: "/assets/js/vendor/jQuery.jPlayer.2.5.0",
+				supplied: "mp3",
+				preload: "none",
+				wmode: "window",
+				keyEnabled: true
+			});
+
+		},
+
 		// Process the physics queue.  This includes item flicks, collisions and
 		// gravity.  This makes certain useful assumptions - icons are square and
 		// always have the same mass (subject to change)
-		processPhysics : function ( event ) {
+		processPhysics: function ( event ) {
 
 			var app = this;
 			
@@ -261,7 +300,7 @@ $( function () {
 
 		},
 
-		processCollisions : function ( item ) {
+		processCollisions: function ( item ) {
 
 			var app = this;
 
@@ -364,7 +403,7 @@ $( function () {
 		// Solve velocity for simply 1D elastic collections
 		// Generally only one item will be moving but this will still account for
 		// both objects have initial velocity
-		processVelocity : function ( m1, m2, v1i, v2i ) {
+		processVelocity: function ( m1, m2, v1i, v2i ) {
 
 			var velocities = {};
 
@@ -378,16 +417,8 @@ $( function () {
 	});	
 
 	// Start the music (literally! Hurray!)
+	player.App = new player.Views.App; // Define the global player object
 
-	Player = new App; // Define the global player object
+	return player;
 
-	// Define area for saving Backbone objects
-	Player.Views = {}; // Namespace to save views
-	Player.Models = {}; // Namespace to save models
-	Player.Collections = {}; // Namespace to save collections
-
-	// Area for caching
-	Player.Cache = {};
-
-});
-
+})( Player || { Models: {}, Views: {}, Collections: {}, Cache: {} } );

@@ -1,0 +1,35 @@
+// Audio controls
+
+.controls
+	> div
+		display: inline-block
+		+transition-duration(0.3s)
+		
+		&:hover
+			color: $red-hover
+			
+	&.on
+		.controls__duration
+			width: em(350px)
+			padding-left: em(20px)
+			
+		.controls__progress
+			opacity: 1
+
+.controls__duration
+	width: em(44px)
+	height: em(14px)
+	top: 1px
+
+.controls__progress
+	width: 100%
+	height: 100%
+	background: $grey-progress
+	opacity: 0
+	
+.controls__play-pause
+	font-size: em(44px)
+	position: absolute
+	top: em(-15px, 44px)
+	left: 0
+	z-index: 2

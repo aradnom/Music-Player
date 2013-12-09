@@ -1,0 +1,77 @@
+.clearfix:after
+	content: ""
+	display: table
+	clear: both
+
+.visuallyhidden
+	position: absolute
+	overflow: hidden
+	clip: rect(0 0 0 0)
+	height: 1px
+	width: 1px
+	margin: -1px
+	padding: 0
+	border: 0
+
+.no-shift
+	-webkit-transform: translate3d(0,0,0)
+
+// Generic element classes
+
+.left
+	float: left
+
+.right
+	float: right
+
+.clear
+	clear: both
+
+.uppercase
+	text-transform: uppercase
+
+.pointer
+	cursor: pointer
+
+.hidden
+	display: none
+
+.bulletproof
+	list-style: none
+
+	&:before
+		content: none !important
+
+.fontface
+	%icns:before
+		font-family: "icons"
+		font-weight: normal
+		font-style: normal
+		vertical-align: -15%
+
+	%icns-after:after
+		font-family: "icons"
+		font-weight: normal
+		font-style: normal
+		vertical-align: -15%
+		
+.error
+	color: $error
+	
+.caps
+	text-transform: uppercase
+
+.down-arrow
+	display: inline-block
+	+font-icon( '\e604', '', '', '' )
+	
+.help
+	display: inline-block
+	+font-icon( '\e606', '', '', '' )
+	+transition-duration(0.3s)
+	position: relative
+		
+// Icons
+
+.icon-spotify
+	color: $spotify
